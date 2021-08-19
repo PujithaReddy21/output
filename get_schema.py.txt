@@ -1,0 +1,47 @@
+import json
+import csv
+import requests
+
+response = requests.get('https://statsapi.web.nhl.com/api/v1/teams')
+# json_data = response.json()
+
+def is_dict(item):
+    if isinstance(item, dict):
+        return True
+    else:
+        return False
+        
+def is_list(item):
+    if isinstance(item, list):
+        return True
+    else:
+        return False
+
+json_data = {{"id": 42, "some_array": ["a","b"]},
+{"id": 50, "some_object": {"nested_text": "this is text", "nested_array": [4,8]}},
+{"id": 100, "some_array": ["c","c","c"],"some_object": {"nested_text": "more text"}}}
+
+schema = []
+
+def get_schema(json_data, parent = ''):
+    for key, value in json_data.items():
+        if is_dict(value):
+            parent = key
+            get_schema(value, parent)
+        elif is_list(value):
+            index = 0
+            for item in value:
+                column_name = str(key) + '.$' + str(index)
+                schema.append(column_name)
+        else:
+            if parent != '':
+                schema.append(str(parent) + '.' + str(key))
+            else:
+                schema.append(str(key))
+                
+                
+            
+    return schema
+
+schema1 = get_schema(json_data)
+print(schema1)
